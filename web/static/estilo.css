@@ -1,0 +1,22 @@
+/* Visual simples: a página existe para os testes com Selenium. */
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 1rem;
+  color: #1f2328;
+  background: #ffffff;
+  line-height: 1.45;
+}
+h1 { margin-bottom: 0.25rem; }
+.subtitulo, .total, .detalhes { color: #59636e; }
+.lista { list-style: none; padding: 0; }
+.noticia { border-bottom: 1px solid #d1d9e0; padding: 0.75rem 0; }
+.titulo { font-weight: 600; color: #0969da; text-decoration: none; }
+.titulo:hover { text-decoration: underline; }
+.detalhes { font-size: 0.875rem; display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.25rem; }
+.etiqueta { border-radius: 1rem; padding: 0 0.5rem; background: #ddf4ff; color: #0550ae; }
+.origem-comunidade .etiqueta { background: #fff8c5; color: #7d4e00; }
+.resumo { margin: 0.35rem 0 0; }
+.duplicata { margin: 0.35rem 0 0; font-size: 0.875rem; color: #7d4e00; }
+.aviso { padding: 0.75rem; border: 1px solid #d1d9e0; border-radius: 0.5rem; }

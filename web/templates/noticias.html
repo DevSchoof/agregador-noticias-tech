@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Notícias de tecnologia</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='estilo.css') }}">
+</head>
+<body>
+  <header>
+    <h1>Notícias de tecnologia</h1>
+    <p class="subtitulo">Coletadas pelo agregador-noticias-tech. Os links levam à fonte original.</p>
+  </header>
+
+  <main>
+    {% if erro %}
+      <p class="aviso" data-testid="erro">Não foi possível ler as notícias salvas. Veja o log do servidor.</p>
+    {% elif not noticias %}
+      <p class="aviso" data-testid="vazio">Nenhuma notícia coletada ainda. Rode <code>python main.py</code> para coletar.</p>
+    {% else %}
+      <p class="total" data-testid="total">{{ noticias|length }} {{ "notícia" if noticias|length == 1 else "notícias" }}</p>
+      <ul class="lista">
+        {% for n in noticias %}
+        <li class="noticia origem-{{ n.origem }}" data-testid="noticia">
+          <a class="titulo" data-testid="titulo" href="{{ n.link }}" target="_blank" rel="noopener noreferrer">{{ n.titulo }}</a>
+          <div class="detalhes">
+            <span class="etiqueta" data-testid="origem">{{ ROTULOS_DE_ORIGEM.get(n.origem, n.origem) }}</span>
+            <span data-testid="fonte">{{ n.fonte }}</span>
+            <span data-testid="data">{{ n.data_publicacao|data_br }}</span>
+            <span data-testid="idioma">{{ n.idioma }}</span>
+          </div>
+          {% if n.resumo != "não informado" %}
+          <p class="resumo" data-testid="resumo">{{ n.resumo }}</p>
+          {% endif %}
+          {% if n.provavel_duplicata_de %}
+          <p class="duplicata" data-testid="duplicata">Provável duplicata de <a href="{{ n.provavel_duplicata_de }}" target="_blank" rel="noopener noreferrer">outra notícia</a> com o mesmo título.</p>
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+  </main>
+</body>
+</html>
