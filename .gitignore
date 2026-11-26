@@ -20,3 +20,6 @@ logs/*
 
 # Instruções locais para o Claude Code (contêm dados pessoais; ficam fora do repositório)
 CLAUDE.md
+
+# Evidências dos testes E2E que falharam (prints e HTML)
+evidencias_e2e/
