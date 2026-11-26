@@ -9,11 +9,10 @@ import io
 import logging
 
 import feedparser
-import requests
 
 from core.modelo import Noticia, link_e_web
 from core.normalizacao import cortar_resumo, limpar_html, normalizar_data
-from fontes.base import TIMEOUT_PADRAO, USER_AGENT, Fonte
+from fontes.base import TIMEOUT_PADRAO, Fonte, baixar
 
 logger = logging.getLogger(__name__)
 
@@ -100,12 +99,9 @@ def buscar_feed(url, sessao=None, timeout=TIMEOUT_PADRAO):
     """Baixa o feed (uma requisição, sem repetir) e devolve os bytes.
 
     Erro HTTP (404, 429...) sobe como exceção: o main registra e segue com as
-    outras fontes. Não insistir é de propósito, para não sobrecarregar a fonte.
+    outras fontes.
     """
-    sessao = sessao or requests
-    resposta = sessao.get(url, headers={"User-Agent": USER_AGENT}, timeout=timeout)
-    resposta.raise_for_status()
-    return resposta.content
+    return baixar(url, sessao=sessao, timeout=timeout)
 
 
 class RssGenerico(Fonte):

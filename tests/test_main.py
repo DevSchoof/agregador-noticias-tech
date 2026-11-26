@@ -13,6 +13,7 @@ from config.fontes import FONTES
 from core.exportador import carregar_json
 from core.modelo import Noticia
 from fontes.base import Fonte
+from fontes.hacker_news import HackerNews
 from fontes.rss_generico import RssGenerico
 from main import criar_fonte, executar
 
@@ -194,6 +195,23 @@ def test_criar_fonte_rss():
         "X", "https://exemplo.com/feed.xml", "en", "primaria")
 
 
+def test_criar_fonte_hacker_news():
+    fonte = criar_fonte({"tipo": "hacker_news", "nome": "Hacker News", "idioma": "en",
+                         "origem": "comunidade", "filtrar": True,
+                         "lista": "newstories", "limite": 10})
+
+    assert isinstance(fonte, HackerNews)
+    assert (fonte.nome, fonte.idioma, fonte.origem, fonte.lista, fonte.limite) == (
+        "Hacker News", "en", "comunidade", "newstories", 10)
+
+
+def test_criar_fonte_hacker_news_usa_os_padroes():
+    fonte = criar_fonte({"tipo": "hacker_news", "nome": "HN", "idioma": "en",
+                         "origem": "comunidade", "filtrar": True})
+
+    assert (fonte.lista, fonte.limite) == ("topstories", 30)
+
+
 def test_criar_fonte_tipo_desconhecido():
     with pytest.raises(ValueError):
         criar_fonte({"tipo": "xyz", "nome": "X"})
@@ -207,5 +225,14 @@ def test_config_real_e_valida():
         assert cfg["origem"] in ("primaria", "comunidade")
         assert isinstance(cfg["filtrar"], bool)
         assert isinstance(cfg.get("descartar_pre_versoes", False), bool)
-        assert cfg["url"].startswith("https://")
+        if cfg["tipo"] == "rss":
+            assert cfg["url"].startswith("https://")
         assert isinstance(criar_fonte(cfg), Fonte)  # só cria, não coleta
+
+
+def test_config_real_tem_fonte_de_comunidade_filtrada():
+    # Sprint 9: o Hacker News é geral, então passa pelo filtro de temas.
+    hn = [cfg for cfg in FONTES if cfg["tipo"] == "hacker_news"]
+    assert len(hn) == 1
+    assert hn[0]["origem"] == "comunidade" and hn[0]["filtrar"] is True
+    assert hn[0].get("limite", 30) <= 30

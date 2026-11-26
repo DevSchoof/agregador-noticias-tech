@@ -14,6 +14,8 @@ from config.temas import TEMAS
 from core.deduplicador import deduplicar
 from core.exportador import carregar_json, salvar_csv, salvar_json
 from core.filtro import descartar_pre_versoes, filtrar_por_tema
+from fontes.hacker_news import LIMITE_PADRAO as LIMITE_HN
+from fontes.hacker_news import HackerNews
 from fontes.rss_generico import RssGenerico
 
 PASTA_PROJETO = Path(__file__).parent
@@ -28,6 +30,10 @@ def criar_fonte(cfg):
     if cfg.get("tipo") == "rss":
         return RssGenerico(nome=cfg["nome"], url=cfg["url"],
                            idioma=cfg["idioma"], origem=cfg["origem"])
+    if cfg.get("tipo") == "hacker_news":
+        return HackerNews(nome=cfg["nome"], idioma=cfg["idioma"], origem=cfg["origem"],
+                          lista=cfg.get("lista", "topstories"),
+                          limite=cfg.get("limite", LIMITE_HN))
     raise ValueError(f"tipo de fonte desconhecido: {cfg.get('tipo')!r}")
 
 
