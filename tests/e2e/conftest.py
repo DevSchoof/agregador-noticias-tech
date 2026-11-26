@@ -23,6 +23,12 @@ from tests.e2e.evidencias import salvar_evidencias
 from web.app import criar_app
 
 PASTA_EVIDENCIAS = Path(__file__).resolve().parents[2] / "evidencias_e2e"
+
+# Temas fixos dos testes E2E: mudanças em config/temas.py não quebram estes testes.
+TEMAS_E2E = {
+    "pt": {"python": ["python"], "automacao": ["automação"], "ia": ["ia"]},
+    "en": {"python": ["python"], "automacao": ["selenium"], "ia": ["ai"]},
+}
 NAVEGADORES = [n.strip() for n in os.environ.get("E2E_NAVEGADORES", "chrome,firefox").split(",")
                if n.strip()]
 
@@ -57,7 +63,8 @@ def servidor(tmp_path_factory):
     caminho = tmp_path_factory.mktemp("dados_e2e") / "noticias.json"
     salvar_json(noticias_ficticias(), caminho)
 
-    servidor_http = make_server("127.0.0.1", 0, criar_app(caminho), threaded=True)
+    app = criar_app(caminho, temas=TEMAS_E2E)
+    servidor_http = make_server("127.0.0.1", 0, app, threaded=True)
     thread = threading.Thread(target=servidor_http.serve_forever, daemon=True)
     thread.start()
     yield f"http://127.0.0.1:{servidor_http.server_port}"
