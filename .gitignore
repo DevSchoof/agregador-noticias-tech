@@ -17,3 +17,6 @@ logs/*
 
 # Editor
 .vscode/
+
+# Instruções locais para o Claude Code (contêm dados pessoais; ficam fora do repositório)
+CLAUDE.md
