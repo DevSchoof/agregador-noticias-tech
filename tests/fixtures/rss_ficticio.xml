@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Feed RSS 2.0 FICTÍCIO, escrito à mão para os testes. Nenhum conteúdo real. -->
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Blog Fictício</title>
+    <link>https://exemplo.com/</link>
+    <description>Feed de teste</description>
+
+    <!-- 1. Item completo: resumo com HTML e entidades, duas categorias. -->
+    <item>
+      <title>Python 9.9 fictício lançado</title>
+      <link>https://exemplo.com/posts/python-9-9?utm_source=rss</link>
+      <pubDate>Mon, 16 Nov 2026 10:30:00 -0300</pubDate>
+      <description>&lt;p&gt;Uma versão &lt;b&gt;imaginária&lt;/b&gt; com novidades &amp;amp; correções.&lt;/p&gt;</description>
+      <category>Python</category>
+      <category>Lançamentos</category>
+    </item>
+
+    <!-- 2. Título com < e & escapados (texto puro, não é HTML) e sem data. -->
+    <item>
+      <title>Como usar List&lt;int&gt; &amp; dicionários</title>
+      <link>https://exemplo.com/posts/list-int</link>
+      <description>Resumo curto.</description>
+    </item>
+
+    <!-- 3. Só tem content:encoded (texto completo): o resumo NÃO pode ser salvo. -->
+    <item>
+      <title>Post só com conteúdo completo</title>
+      <link>https://exemplo.com/posts/conteudo</link>
+      <pubDate>Sun, 15 Nov 2026 08:00:00 +0000</pubDate>
+      <content:encoded>&lt;p&gt;Este seria o texto completo da matéria fictícia.&lt;/p&gt;</content:encoded>
+    </item>
+
+    <!-- 4. Sem link: deve ser descartado, sem derrubar os outros. -->
+    <item>
+      <title>Item quebrado sem link</title>
+      <description>Não tem link.</description>
+    </item>
+
+    <!-- 5. Sem título e com resumo longo (mais de 300 caracteres). -->
+    <item>
+      <link>https://exemplo.com/posts/sem-titulo</link>
+      <pubDate>data que não existe</pubDate>
+      <description>Palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra palavra fim.</description>
+    </item>
+  </channel>
+</rss>

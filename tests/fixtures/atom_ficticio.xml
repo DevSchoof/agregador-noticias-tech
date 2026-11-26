@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Feed Atom FICTÍCIO no estilo das releases do GitHub, escrito à mão. -->
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Releases do projeto-ficticio</title>
+  <id>tag:exemplo.com,2026:projeto-ficticio</id>
+  <updated>2026-11-20T15:00:00Z</updated>
+
+  <!-- 1. Só tem <updated> (sem <published>) e o conteúdo em <content>. -->
+  <entry>
+    <id>tag:exemplo.com,2026:release-8.3.4</id>
+    <title>8.3.4</title>
+    <link rel="alternate" type="text/html" href="https://exemplo.com/projeto-ficticio/releases/tag/8.3.4"/>
+    <updated>2026-11-20T15:00:00Z</updated>
+    <content type="html">&lt;h2&gt;Correções&lt;/h2&gt;&lt;ul&gt;&lt;li&gt;Corrige um erro imaginário.&lt;/li&gt;&lt;/ul&gt;</content>
+  </entry>
+
+  <!-- 2. Tem <summary> próprio além do <content>, e data com fuso. -->
+  <entry>
+    <id>tag:exemplo.com,2026:release-8.3.3</id>
+    <title type="html">8.3.3 &lt;em&gt;estável&lt;/em&gt;</title>
+    <link rel="alternate" type="text/html" href="https://exemplo.com/projeto-ficticio/releases/tag/8.3.3"/>
+    <published>2026-11-10T09:00:00+02:00</published>
+    <updated>2026-11-11T09:00:00+02:00</updated>
+    <summary>Versão de manutenção fictícia.</summary>
+    <content type="html">&lt;p&gt;Notas longas da versão.&lt;/p&gt;</content>
+    <category term="release"/>
+  </entry>
+</feed>
