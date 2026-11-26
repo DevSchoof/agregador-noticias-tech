@@ -28,6 +28,19 @@ pytest           # roda os testes (não acessam a internet)
 Cada execução junta o que já estava salvo com o que foi coletado, sem repetir
 notícias. O log fica em `logs/agregador.log`.
 
+### Exemplo real
+
+Uma execução em 26/11/2026: das 99 notícias coletadas, 71 ficaram depois dos
+filtros (nightly e pré-versões descartadas nas releases; só os temas no Hacker
+News), e 67 já estavam salvas de execuções anteriores.
+
+![Saída do terminal ao rodar python main.py](docs/execucao.png)
+
+O CSV aberto no Excel (primárias primeiro, da mais nova para a mais antiga;
+releases do GitHub não têm resumo, porque o feed só traz as notas completas):
+
+![Arquivo noticias.csv aberto no Excel](docs/csv-excel.png)
+
 ## Fontes
 
 | Fonte | Como é lida | Origem | Filtro de temas |
