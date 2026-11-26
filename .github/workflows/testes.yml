@@ -47,3 +47,38 @@ jobs:
         run: pip install pip-audit
       - name: Auditar as dependências
         run: pip-audit -r requirements.txt
+
+  e2e:
+    # Testes de ponta a ponta com Selenium: a página roda neste servidor
+    # (127.0.0.1) com dados fictícios, e o navegador abre em modo headless.
+    # O Chrome e o Firefox já vêm instalados nos servidores ubuntu do GitHub;
+    # o Selenium Manager baixa o driver de cada um.
+    name: e2e (${{ matrix.navegador }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        navegador: [chrome, firefox]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+      - name: Rodar os testes E2E
+        env:
+          E2E_NAVEGADORES: ${{ matrix.navegador }}
+        run: pytest -m e2e -v
+      - name: Guardar print e HTML dos testes que falharam
+        # Só roda se algum passo anterior falhou. Os arquivos ficam na página da
+        # execução (seção Artifacts) por 7 dias.
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-e2e-${{ matrix.navegador }}
+          path: evidencias_e2e/
+          if-no-files-found: ignore
+          retention-days: 7
