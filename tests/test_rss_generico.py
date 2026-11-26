@@ -80,6 +80,20 @@ def test_rss_item_sem_link_e_descartado_e_registrado(caplog):
     assert "sem link" in caplog.text.lower()
 
 
+def test_rss_link_que_nao_e_web_e_descartado_e_registrado(caplog):
+    feed = b"""<?xml version="1.0"?><rss version="2.0"><channel><title>x</title>
+      <item><title>Malicioso</title><link>javascript:alert(1)</link></item>
+      <item><title>Dados embutidos</title><link>data:text/html,oi</link></item>
+      <item><title>Normal</title><link>https://exemplo.com/normal</link></item>
+    </channel></rss>"""
+
+    with caplog.at_level(logging.WARNING):
+        noticias = converter_feed(feed, fonte="F", idioma="pt", origem="primaria")
+
+    assert [n.titulo for n in noticias] == ["Normal"]
+    assert caplog.text.count("descartado") == 2
+
+
 def test_rss_sem_titulo_data_invalida_e_resumo_longo():
     noticia = por_link(converter_rss(), "sem-titulo")
 

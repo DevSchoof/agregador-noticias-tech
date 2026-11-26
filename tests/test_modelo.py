@@ -98,6 +98,33 @@ def test_rejeita_noticia_sem_link(link):
         criar_noticia(link=link)
 
 
+@pytest.mark.parametrize("link", [
+    "javascript:alert(1)",
+    "JavaScript:alert(1)",
+    "  javascript:alert(1)",
+    "data:text/html,<script>alert(1)</script>",
+    "vbscript:msgbox(1)",
+    "file:///C:/Windows/win.ini",
+    "ftp://exemplo.com/arquivo",
+    "/caminho/relativo",
+    "exemplo.com/sem-esquema",
+    "https://",           # esquema certo, mas sem domínio
+])
+def test_rejeita_link_que_nao_e_http_ou_https(link):
+    # Segurança: na Etapa 2 o link vira <a href>; "javascript:" executaria código.
+    with pytest.raises(ValueError):
+        criar_noticia(link=link)
+
+
+@pytest.mark.parametrize("link", [
+    "https://exemplo.com/a",
+    "http://exemplo.com/a",
+    "HTTPS://Exemplo.com/a",
+])
+def test_aceita_link_http_e_https(link):
+    assert criar_noticia(link=link).link == link
+
+
 def test_provavel_duplicata_de_padrao_e_texto_vazio():
     assert criar_noticia().provavel_duplicata_de == ""
 

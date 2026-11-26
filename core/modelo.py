@@ -1,11 +1,25 @@
 """Contrato de dados do agregador: o formato de toda notícia, venha de qual fonte vier."""
 
 from dataclasses import dataclass, field
+from urllib.parse import urlsplit
 
 NAO_INFORMADO = "não informado"
 
 ORIGENS_VALIDAS = ("primaria", "comunidade")
 IDIOMAS_VALIDOS = ("pt", "en")
+ESQUEMAS_DE_LINK = ("http", "https")
+
+
+def link_e_web(link):
+    """True se o link é um endereço web absoluto (http ou https, com domínio).
+
+    Segurança: o link vem de terceiros e, na página da Etapa 2, vira <a href>.
+    "javascript:", "data:" e outros esquemas poderiam executar código no navegador.
+    """
+    if not isinstance(link, str):
+        return False
+    partes = urlsplit(link.strip())
+    return partes.scheme.lower() in ESQUEMAS_DE_LINK and bool(partes.netloc)
 
 
 def _ou_nao_informado(valor):
@@ -38,6 +52,8 @@ class Noticia:
         """Roda logo depois da criação: valida e preenche os campos ausentes."""
         if self.link is None or str(self.link).strip() == "":
             raise ValueError("Notícia sem link: o link é obrigatório.")
+        if not link_e_web(self.link):
+            raise ValueError(f"link não é http/https: {self.link!r}")
         if self.origem not in ORIGENS_VALIDAS:
             raise ValueError(f"origem inválida: {self.origem!r}. Use {ORIGENS_VALIDAS}.")
         if self.idioma not in IDIOMAS_VALIDOS:

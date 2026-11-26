@@ -10,6 +10,10 @@ from core.modelo import Noticia
 
 COLUNAS = [campo.name for campo in fields(Noticia)]  # ordem do contrato
 
+# Segurança (CSV injection): no Excel, uma célula que começa com um destes
+# caracteres é interpretada como fórmula. Título, resumo e tags vêm de terceiros.
+INICIOS_DE_FORMULA = ("=", "+", "-", "@", "\t", "\r")
+
 
 def _gravar_com_seguranca(caminho, conteudo, encoding):
     """Grava primeiro num arquivo temporário e só depois troca pelo definitivo.
@@ -47,6 +51,17 @@ def carregar_json(caminho):
     return [Noticia(**item) for item in dados]
 
 
+def _proteger_celula(valor):
+    """Põe um ' na frente do texto que o Excel executaria como fórmula.
+
+    O ' é o jeito do próprio Excel de dizer "isto é texto". Só o CSV recebe a
+    proteção; o JSON guarda o texto exatamente como veio da fonte.
+    """
+    if isinstance(valor, str) and valor.startswith(INICIOS_DE_FORMULA):
+        return "'" + valor
+    return valor
+
+
 def salvar_csv(noticias, caminho):
     """Salva como CSV em utf-8-sig (o BOM faz o Excel reconhecer os acentos).
 
@@ -57,7 +72,7 @@ def salvar_csv(noticias, caminho):
     for noticia in noticias:
         linha = asdict(noticia)
         linha["tags"] = ", ".join(noticia.tags)
-        linhas.append(linha)
+        linhas.append({coluna: _proteger_celula(valor) for coluna, valor in linha.items()})
 
     # Monta o CSV em memória para reaproveitar a gravação segura.
     buffer = StringIO()

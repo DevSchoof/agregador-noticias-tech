@@ -11,7 +11,7 @@ import logging
 import feedparser
 import requests
 
-from core.modelo import Noticia
+from core.modelo import Noticia, link_e_web
 from core.normalizacao import cortar_resumo, limpar_html, normalizar_data
 from fontes.base import TIMEOUT_PADRAO, USER_AGENT, Fonte
 
@@ -77,6 +77,9 @@ def converter_feed(conteudo, *, fonte, idioma, origem):
         link = (entrada.get("link") or "").strip()
         if not link:
             logger.warning("%s: item sem link descartado (título: %r)", fonte, entrada.get("title"))
+            continue
+        if not link_e_web(link):
+            logger.warning("%s: item com link que não é http/https descartado (%r)", fonte, link)
             continue
         noticias.append(Noticia(
             titulo=_titulo(entrada),

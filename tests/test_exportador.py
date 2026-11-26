@@ -4,6 +4,8 @@ import csv
 import json
 from dataclasses import fields
 
+import pytest
+
 from core.deduplicador import deduplicar
 from core.exportador import carregar_json, salvar_csv, salvar_json
 from core.modelo import NAO_INFORMADO, Noticia
@@ -144,6 +146,42 @@ def test_csv_texto_com_virgula_e_aspas_nao_quebra_colunas(tmp_path):
     salvar_csv([criar(titulo=titulo)], caminho)
 
     assert ler_csv(caminho)[0]["titulo"] == titulo
+
+
+@pytest.mark.parametrize("perigoso", [
+    '=HYPERLINK("https://exemplo.com","clique")',
+    "+1+1",
+    "-2+3",
+    "@SUM(1,1)",
+    "\t=1+1",
+    "\r=1+1",
+])
+def test_csv_neutraliza_texto_que_o_excel_executaria_como_formula(tmp_path, perigoso):
+    # Segurança (CSV injection): o título vem de terceiros; no Excel, texto que
+    # começa com = + - @ vira fórmula. O ' na frente faz o Excel tratar como texto.
+    caminho = tmp_path / "noticias.csv"
+    salvar_csv([criar(titulo=perigoso, resumo=perigoso, tags=[perigoso])], caminho)
+
+    linha = ler_csv(caminho)[0]
+
+    assert linha["titulo"] == "'" + perigoso
+    assert linha["resumo"] == "'" + perigoso
+    assert linha["tags"] == "'" + perigoso
+
+
+def test_csv_nao_altera_texto_comum(tmp_path):
+    caminho = tmp_path / "noticias.csv"
+    salvar_csv([criar(titulo="Python 3.15 = mais rápido? Sim, -20% de tempo")], caminho)
+
+    assert ler_csv(caminho)[0]["titulo"] == "Python 3.15 = mais rápido? Sim, -20% de tempo"
+
+
+def test_json_guarda_o_texto_original_sem_o_apostrofo(tmp_path):
+    # A proteção é só do CSV (que abre no Excel); o JSON fica fiel à fonte.
+    caminho = tmp_path / "noticias.json"
+    salvar_json([criar(titulo="=1+1")], caminho)
+
+    assert carregar_json(caminho)[0].titulo == "=1+1"
 
 
 def test_csv_lista_vazia_tem_so_o_cabecalho(tmp_path):
