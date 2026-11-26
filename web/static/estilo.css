@@ -20,3 +20,6 @@ h1 { margin-bottom: 0.25rem; }
 .resumo { margin: 0.35rem 0 0; }
 .duplicata { margin: 0.35rem 0 0; font-size: 0.875rem; color: #7d4e00; }
 .aviso { padding: 0.75rem; border: 1px solid #d1d9e0; border-radius: 0.5rem; }
+form { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: end; margin: 1rem 0; }
+form label { display: flex; flex-direction: column; font-size: 0.875rem; color: #59636e; }
+form select, form button { font: inherit; padding: 0.25rem 0.4rem; }

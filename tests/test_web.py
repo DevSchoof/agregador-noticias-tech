@@ -4,11 +4,16 @@ O test client faz requisições direto ao app (sem servidor, sem rede). Cada tes
 grava um JSON fictício na pasta temporária do pytest e aponta o app para ele.
 """
 
+import re
+
 import pytest
 
 from core.exportador import salvar_json
 from core.modelo import NAO_INFORMADO, Noticia
 from web.app import criar_app
+
+TEMAS_TESTE = {"pt": {"python": ["python"], "ia": ["ia"]},
+               "en": {"python": ["python"], "ia": ["ai"]}}
 
 
 def noticia(titulo="Python fictício 9.9", link="https://exemplo.com/a", origem="primaria",
@@ -22,15 +27,15 @@ def noticia(titulo="Python fictício 9.9", link="https://exemplo.com/a", origem=
 @pytest.fixture
 def abrir(tmp_path):
     """Grava as notícias num JSON temporário e devolve a resposta de GET /."""
-    def _abrir(noticias=None, conteudo_bruto=None):
+    def _abrir(noticias=None, conteudo_bruto=None, url="/"):
         caminho = tmp_path / "noticias.json"
         if conteudo_bruto is not None:
             caminho.write_text(conteudo_bruto, encoding="utf-8")
         elif noticias is not None:
             salvar_json(noticias, caminho)
-        app = criar_app(caminho)
+        app = criar_app(caminho, temas=TEMAS_TESTE)
         app.config["TESTING"] = True
-        return app.test_client().get("/")
+        return app.test_client().get(url)
     return _abrir
 
 
@@ -171,3 +176,80 @@ def test_css_e_servido(tmp_path):
 
     assert resposta.status_code == 200
     assert resposta.mimetype == "text/css"
+
+
+# ----------------------------------------------------------- filtros
+
+@pytest.fixture
+def varias():
+    return [
+        noticia("Python 9.9 released", "https://exemplo.com/1", fonte="Blog A"),
+        noticia("New AI model", "https://exemplo.com/2", fonte="Blog B"),
+        noticia("Python e IA no Brasil", "https://exemplo.com/3", fonte="Portal C",
+                idioma="pt", origem="comunidade"),
+        noticia("Preço do café", "https://exemplo.com/4", fonte="Portal C",
+                idioma="pt", origem="comunidade"),
+    ]
+
+
+def titulos_na_pagina(texto):
+    return re.findall(r'data-testid="titulo"[^>]*>([^<]*)<', texto)
+
+
+def test_formulario_de_filtros_com_as_opcoes(abrir, varias):
+    texto = html(abrir(varias))
+
+    assert '<form method="get" action="/" data-testid="filtros">' in texto
+    for nome in ("origem", "fonte", "idioma", "tema"):
+        assert f'name="{nome}"' in texto
+    assert '<option value="Portal C">Portal C</option>' in texto
+    assert '<option value="pt">português</option>' in texto
+    assert '<option value="ia">IA</option>' in texto
+
+
+def test_filtro_pela_url(abrir, varias):
+    texto = html(abrir(varias, url="/?origem=comunidade"))
+
+    assert titulos_na_pagina(texto) == ["Python e IA no Brasil", "Preço do café"]
+    assert 'data-testid="total">2 de 4 notícias<' in texto
+
+
+def test_filtros_combinados_pela_url(abrir, varias):
+    texto = html(abrir(varias, url="/?tema=python&idioma=en"))
+
+    assert titulos_na_pagina(texto) == ["Python 9.9 released"]
+
+
+def test_filtro_escolhido_fica_selecionado(abrir, varias):
+    texto = html(abrir(varias, url="/?fonte=Blog+B&tema=ia"))
+
+    assert '<option value="Blog B" selected>Blog B</option>' in texto
+    assert '<option value="ia" selected>IA</option>' in texto
+
+
+def test_filtro_sem_resultado_mostra_mensagem_e_limpar(abrir, varias):
+    texto = html(abrir(varias, url="/?fonte=Blog+A&tema=ia"))
+
+    assert 'data-testid="sem-resultado"' in texto
+    assert 'data-testid="noticia"' not in texto
+    assert 'href="/" data-testid="limpar"' in texto
+
+
+def test_valor_invalido_na_url_e_ignorado(abrir, varias):
+    # Ninguém deve conseguir quebrar a página editando a URL.
+    resposta = abrir(varias, url="/?origem=hacker&idioma=%3Cscript%3E&tema=xyz&fonte=")
+
+    assert resposta.status_code == 200
+    assert len(titulos_na_pagina(html(resposta))) == 4
+    assert "<script>" not in html(resposta)
+
+
+def test_sem_filtro_o_total_e_simples(abrir, varias):
+    assert 'data-testid="total">4 notícias<' in html(abrir(varias))
+
+
+def test_fonte_com_html_no_nome_aparece_escapada_no_filtro(abrir):
+    texto = html(abrir([noticia(fonte='<img src=x onerror="alert(1)">')]))
+
+    assert "<img src=x" not in texto
+    assert "&lt;img src=x" in texto

@@ -9,10 +9,12 @@ import logging
 from datetime import datetime
 from pathlib import Path
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 
+from config.temas import TEMAS
 from core.exportador import carregar_json
 from core.modelo import NAO_INFORMADO
+from web.filtros import aplicar_filtros, filtros_validos, opcoes_de_filtro
 
 PASTA_PROJETO = Path(__file__).resolve().parent.parent
 CAMINHO_PADRAO = PASTA_PROJETO / "dados" / "noticias.json"
@@ -38,13 +40,16 @@ def formatar_data(valor):
         return valor  # mostra como veio, em vez de quebrar a página
 
 
-def criar_app(caminho_json=CAMINHO_PADRAO):
-    """Cria o app apontando para um JSON. Os testes passam um JSON fictício."""
+def criar_app(caminho_json=CAMINHO_PADRAO, temas=TEMAS):
+    """Cria o app apontando para um JSON. Os testes passam um JSON fictício
+    e temas próprios, para não depender da config real."""
     app = Flask(__name__)
     caminho_json = Path(caminho_json)
 
     app.jinja_env.filters["data_br"] = formatar_data
     app.jinja_env.globals["ROTULOS_DE_ORIGEM"] = ROTULOS_DE_ORIGEM
+    app.jinja_env.globals["NOMES_DOS_FILTROS"] = {
+        "origem": "Origem", "fonte": "Fonte", "idioma": "Idioma", "tema": "Tema"}
 
     @app.after_request
     def cabecalhos_de_seguranca(resposta):
@@ -60,8 +65,16 @@ def criar_app(caminho_json=CAMINHO_PADRAO):
         except Exception:
             # Detalhes vão só para o log; a página mostra uma mensagem simples.
             logger.exception("Não foi possível ler %s", caminho_json)
-            return render_template("noticias.html", erro=True, noticias=[]), 500
-        return render_template("noticias.html", erro=False, noticias=noticias)
+            return render_template("noticias.html", erro=True, noticias=[],
+                                   total=0, opcoes=None, filtros={}), 500
+
+        # Os filtros vêm da URL (?origem=...&tema=...). Valores desconhecidos
+        # são ignorados, para ninguém quebrar a página editando o endereço.
+        opcoes = opcoes_de_filtro(noticias, temas)
+        filtros = filtros_validos(request.args, opcoes)
+        return render_template("noticias.html", erro=False,
+                               noticias=aplicar_filtros(noticias, filtros, temas),
+                               total=len(noticias), opcoes=opcoes, filtros=filtros)
 
     return app
 

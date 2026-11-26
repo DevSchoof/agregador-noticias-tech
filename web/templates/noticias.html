@@ -15,10 +15,34 @@
   <main>
     {% if erro %}
       <p class="aviso" data-testid="erro">Não foi possível ler as notícias salvas. Veja o log do servidor.</p>
-    {% elif not noticias %}
+    {% elif total == 0 %}
       <p class="aviso" data-testid="vazio">Nenhuma notícia coletada ainda. Rode <code>python main.py</code> para coletar.</p>
     {% else %}
-      <p class="total" data-testid="total">{{ noticias|length }} {{ "notícia" if noticias|length == 1 else "notícias" }}</p>
+      {# Formulário sem JavaScript: o "Filtrar" envia os campos na URL (GET). #}
+      <form method="get" action="/" data-testid="filtros">
+        {% for campo in ["origem", "fonte", "idioma", "tema"] %}
+        <label>{{ NOMES_DOS_FILTROS[campo] }}
+          <select name="{{ campo }}" data-testid="filtro-{{ campo }}">
+            <option value="">todos</option>
+            {% for valor, rotulo in opcoes[campo] %}
+            <option value="{{ valor }}"{% if filtros.get(campo) == valor %} selected{% endif %}>{{ rotulo }}</option>
+            {% endfor %}
+          </select>
+        </label>
+        {% endfor %}
+        <button type="submit" data-testid="filtrar">Filtrar</button>
+        <a href="/" data-testid="limpar">Limpar filtros</a>
+      </form>
+
+      {% if filtros %}
+      <p class="total" data-testid="total">{{ noticias|length }} de {{ total }} notícias</p>
+      {% else %}
+      <p class="total" data-testid="total">{{ total }} {{ "notícia" if total == 1 else "notícias" }}</p>
+      {% endif %}
+
+      {% if not noticias %}
+      <p class="aviso" data-testid="sem-resultado">Nenhuma notícia com esses filtros. <a href="/">Limpar filtros</a></p>
+      {% endif %}
       <ul class="lista">
         {% for n in noticias %}
         <li class="noticia origem-{{ n.origem }}" data-testid="noticia">
