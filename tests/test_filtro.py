@@ -3,7 +3,8 @@
 import pytest
 
 from config.temas import TEMAS
-from core.filtro import filtrar_por_tema, temas_da_noticia
+from core.filtro import (descartar_pre_versoes, e_pre_versao, filtrar_por_tema,
+                         temas_da_noticia)
 from core.modelo import Noticia
 
 TEMAS_TESTE = {
@@ -139,3 +140,47 @@ def test_config_tem_os_quatro_temas_nos_dois_idiomas(idioma):
 def test_config_nenhum_tema_sem_palavras(idioma):
     for tema, palavras in TEMAS[idioma].items():
         assert palavras, f"tema {tema!r} ({idioma}) sem palavras-chave"
+
+
+# ------------------------------------------------ nightly e pré-versões
+
+@pytest.mark.parametrize("titulo", [
+    "Nightly",
+    "nightly build",
+    "10.0.0.dev0",
+    "4.0.0a1",
+    "3.16.0b2",
+    "2.0rc1",
+    "1.0.0-rc.1",
+    "v2.0.0-beta",
+    "Selenium 5.0.0 Beta 1",
+    "Python 3.16.0 alpha 2",
+    "1.0pre",
+    "Preview 7",
+    "SNAPSHOT 1.2",
+])
+def test_reconhece_pre_versao(titulo):
+    assert e_pre_versao(titulo)
+
+
+@pytest.mark.parametrize("titulo", [
+    "8.3.4",
+    "9.2.0",
+    "Selenium 4.54.0",
+    "v1.2.3",
+    "Python 3.15.2, 3.14.10 and 3.13.18 are out",
+    "Release 2026-11-20",
+    "Alphabet anuncia novidades",  # "alpha" dentro de outra palavra
+    "Betamax 1.0",
+    "Development update",          # "dev" como palavra comum
+])
+def test_versao_estavel_nao_e_pre_versao(titulo):
+    assert not e_pre_versao(titulo)
+
+
+def test_descartar_pre_versoes_mantem_a_ordem():
+    noticias = [criar_noticia("Selenium 4.54.0"), criar_noticia("Nightly"),
+                criar_noticia("9.2.0"), criar_noticia("10.0.0.dev0")]
+
+    assert [n.titulo for n in descartar_pre_versoes(noticias)] == ["Selenium 4.54.0", "9.2.0"]
+

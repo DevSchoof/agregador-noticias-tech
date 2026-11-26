@@ -8,6 +8,8 @@ Campos de cada fonte:
 - origem: "primaria" ou "comunidade".
 - filtrar: True para fontes gerais (passam pelo filtro de temas); False para
   fontes que já são do tema (títulos como "8.3.4" seriam descartados).
+- descartar_pre_versoes (opcional, padrão False): True nas releases, para não
+  salvar nightly, alpha, beta, rc, dev (decisão do Eduardo em 2026-11-26).
 """
 
 FONTES = [
@@ -26,6 +28,7 @@ FONTES = [
         "idioma": "en",
         "origem": "primaria",
         "filtrar": False,
+        "descartar_pre_versoes": True,
     },
     {
         "tipo": "rss",
@@ -34,6 +37,7 @@ FONTES = [
         "idioma": "en",
         "origem": "primaria",
         "filtrar": False,
+        "descartar_pre_versoes": True,
     },
 ]
 

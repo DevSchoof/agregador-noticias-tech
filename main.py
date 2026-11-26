@@ -13,7 +13,7 @@ from config.fontes import FONTES, PAUSA_ENTRE_FONTES
 from config.temas import TEMAS
 from core.deduplicador import deduplicar
 from core.exportador import carregar_json, salvar_csv, salvar_json
-from core.filtro import filtrar_por_tema
+from core.filtro import descartar_pre_versoes, filtrar_por_tema
 from fontes.rss_generico import RssGenerico
 
 PASTA_PROJETO = Path(__file__).parent
@@ -48,6 +48,8 @@ def _coletar_todas(configs, temas, fabrica, pausa):
 
         total_da_fonte = len(noticias)
         coletadas += total_da_fonte
+        if cfg.get("descartar_pre_versoes", False):
+            noticias = descartar_pre_versoes(noticias)
         if cfg["filtrar"]:
             noticias = filtrar_por_tema(noticias, temas)
         logger.info("Fonte %r: %d coletadas, %d aproveitadas%s.", nome,

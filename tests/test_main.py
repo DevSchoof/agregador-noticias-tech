@@ -37,9 +37,10 @@ class FonteFalsa(Fonte):
         return list(self.noticias)
 
 
-def config(nome, filtrar=False):
+def config(nome, filtrar=False, descartar_pre_versoes=False):
     return {"tipo": "falsa", "nome": nome, "url": "https://exemplo.com/feed",
-            "idioma": "pt", "origem": "primaria", "filtrar": filtrar}
+            "idioma": "pt", "origem": "primaria", "filtrar": filtrar,
+            "descartar_pre_versoes": descartar_pre_versoes}
 
 
 def rodar(tmp_path, configs, fontes_falsas):
@@ -99,6 +100,25 @@ def test_filtro_so_nas_fontes_com_filtrar_true(tmp_path):
 
     links = sorted(n.link for n in carregar_json(tmp_path / "noticias.json"))
     assert links == ["https://exemplo.com/g1", "https://exemplo.com/t1"]
+
+
+def test_descarta_pre_versoes_so_nas_fontes_que_pedem(tmp_path):
+    releases = [noticia("Nightly", "https://exemplo.com/r/nightly"),
+                noticia("10.0.0.dev0", "https://exemplo.com/r/dev"),
+                noticia("9.2.0", "https://exemplo.com/r/9.2.0")]
+    fontes = {
+        "Releases": FonteFalsa("Releases", releases),
+        "Blog": FonteFalsa("Blog", [noticia("Python 3.16.0 alpha 2 is now available",
+                                            "https://exemplo.com/blog/alpha")]),
+    }
+
+    resumo = rodar(tmp_path, [config("Releases", descartar_pre_versoes=True),
+                              config("Blog")], fontes)
+
+    links = sorted(n.link for n in carregar_json(tmp_path / "noticias.json"))
+    # O post do blog sobre a alpha continua: a opção vale só para "Releases".
+    assert links == ["https://exemplo.com/blog/alpha", "https://exemplo.com/r/9.2.0"]
+    assert resumo["coletadas"] == 4 and resumo["depois_do_filtro"] == 2
 
 
 def test_resumo_da_execucao(tmp_path):
@@ -186,5 +206,6 @@ def test_config_real_e_valida():
         assert cfg["idioma"] in ("pt", "en")
         assert cfg["origem"] in ("primaria", "comunidade")
         assert isinstance(cfg["filtrar"], bool)
+        assert isinstance(cfg.get("descartar_pre_versoes", False), bool)
         assert cfg["url"].startswith("https://")
         assert isinstance(criar_fonte(cfg), Fonte)  # só cria, não coleta
