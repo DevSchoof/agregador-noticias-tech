@@ -1,0 +1,49 @@
+# Roda os testes e a auditoria de dependências num servidor do GitHub.
+# Os testes não acessam a internet (fixtures fictícias e sessões falsas).
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:  # permite rodar à mão pela aba Actions
+
+# O workflow só lê o repositório; não pode alterar nada.
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    name: pytest (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false  # se uma versão falhar, a outra roda até o fim
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+      - name: Instalar dependências
+        run: pip install -r requirements.txt
+      - name: Rodar os testes
+        run: pytest -v
+
+  auditoria:
+    # Procura vulnerabilidades conhecidas nas versões do requirements.txt.
+    # O pip-audit é instalado só aqui, não entra no requirements.txt.
+    name: pip-audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Instalar o pip-audit
+        run: pip install pip-audit
+      - name: Auditar as dependências
+        run: pip-audit -r requirements.txt

@@ -1,5 +1,7 @@
 # agregador-noticias-tech
 
+[![testes](https://github.com/DevSchoof/agregador-noticias-tech/actions/workflows/testes.yml/badge.svg)](https://github.com/DevSchoof/agregador-noticias-tech/actions/workflows/testes.yml)
+
 Agregador de notícias de tecnologia em Python. Lê feeds RSS/Atom e a API oficial
 do Hacker News, filtra por tema, remove repetidas e salva o resultado em JSON e
 CSV. Dá prioridade à **fonte primária** (blogs oficiais e releases) e usa
@@ -135,6 +137,10 @@ Os dados vêm de terceiros, então são tratados como não confiáveis:
 
 Cobrem: modelo e validações, normalização, filtro de temas e de pré-versões,
 deduplicação, exportação, conversão de cada fonte e orquestração.
+
+O [GitHub Actions](.github/workflows/testes.yml) roda os testes no Python 3.11
+e 3.12 a cada push no `main` e em pull requests, e o `pip-audit` procura
+vulnerabilidades conhecidas nas dependências.
 
 ## Limitações
 
