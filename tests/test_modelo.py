@@ -98,6 +98,19 @@ def test_rejeita_noticia_sem_link(link):
         criar_noticia(link=link)
 
 
+def test_provavel_duplicata_de_padrao_e_texto_vazio():
+    assert criar_noticia().provavel_duplicata_de == ""
+
+
+def test_provavel_duplicata_de_none_vira_texto_vazio():
+    assert criar_noticia(provavel_duplicata_de=None).provavel_duplicata_de == ""
+
+
+def test_provavel_duplicata_de_guarda_o_link_da_principal():
+    noticia = criar_noticia(provavel_duplicata_de="https://exemplo.com/principal")
+    assert noticia.provavel_duplicata_de == "https://exemplo.com/principal"
+
+
 def test_campos_so_por_nome():
     # Evita trocar titulo e link de lugar sem perceber.
     with pytest.raises(TypeError):

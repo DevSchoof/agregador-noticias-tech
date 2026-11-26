@@ -30,6 +30,9 @@ class Noticia:
     idioma: str
     area: str = "tech"
     origem: str
+    # Link da notícia principal quando esta tem o mesmo título de outra
+    # (preenchido pelo deduplicador). "" = não é provável duplicata.
+    provavel_duplicata_de: str = ""
 
     def __post_init__(self):
         """Roda logo depois da criação: valida e preenche os campos ausentes."""
@@ -46,3 +49,5 @@ class Noticia:
         self.resumo = _ou_nao_informado(self.resumo)
         if self.tags is None:
             self.tags = []
+        if self.provavel_duplicata_de is None:
+            self.provavel_duplicata_de = ""
