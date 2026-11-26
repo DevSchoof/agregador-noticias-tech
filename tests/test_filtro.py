@@ -142,6 +142,43 @@ def test_config_nenhum_tema_sem_palavras(idioma):
         assert palavras, f"tema {tema!r} ({idioma}) sem palavras-chave"
 
 
+# Palavras acrescentadas em 2026-11-26 depois da primeira execução real com o
+# Hacker News (títulos abaixo são fictícios, no mesmo estilo dos reais).
+@pytest.mark.parametrize("titulo, tema", [
+    ("GPT-9 beats a fictional benchmark", "ia"),
+    ("OpenAI announces an imaginary model", "ia"),
+    ("Anthropic publishes a fictional paper", "ia"),
+    ("Gemini gets a pretend update", "ia"),
+    ("Building an AI agent for invoices", "ia"),
+    ("Why AI agents fail in production", "ia"),
+    ("Agentic workflows explained", "ia"),
+    ("PostgreSQL in a single binary", "dados"),
+    ("Postgres tips for beginners", "dados"),
+    ("SQLite is enough for most apps", "dados"),
+    ("Migrating from MySQL", "dados"),
+])
+def test_config_en_palavras_novas(titulo, tema):
+    noticia = criar_noticia(titulo, idioma="en")
+
+    assert tema in temas_da_noticia(noticia, TEMAS)
+
+
+@pytest.mark.parametrize("titulo", [
+    "Changing the browser user agent string",
+    "Real estate agent shares tips",
+])
+def test_config_en_agent_sozinho_nao_e_ia(titulo):
+    assert "ia" not in temas_da_noticia(criar_noticia(titulo, idioma="en"), TEMAS)
+
+
+def test_config_en_falso_positivo_conhecido_gemini():
+    # Limitação aceita: "Gemini" também é constelação/signo. O filtro olha
+    # palavras, não sentido. Documentado aqui para não ser surpresa.
+    noticia = criar_noticia("The Gemini constellation in winter skies", idioma="en")
+
+    assert "ia" in temas_da_noticia(noticia, TEMAS)
+
+
 # ------------------------------------------------ nightly e pré-versões
 
 @pytest.mark.parametrize("titulo", [

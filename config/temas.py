@@ -41,11 +41,19 @@ TEMAS = {
             "data science", "data scientist", "data engineering",
             "data analysis", "data pipeline", "database", "databases",
             "big data", "open data", "sql", "pandas", "etl",
+            # Acrescentadas em 2026-11-26 (primeira execução com o Hacker News):
+            "postgresql", "postgres", "sqlite", "mysql",
         ],
         "ia": [
             "ai", "artificial intelligence", "machine learning",
             "deep learning", "neural network", "neural networks",
             "llm", "llms", "generative ai", "chatbot",
+            # Acrescentadas em 2026-11-26 (primeira execução com o Hacker News).
+            # Sem "agent" sozinho (pegaria "user agent"). Nomes de modelos
+            # (Qwen, Llama...) ficam de fora: mudam rápido demais.
+            # Limitação: "gemini" também casa com a constelação/signo.
+            "gpt", "openai", "anthropic", "gemini",
+            "ai agent", "ai agents", "agentic",
         ],
     },
 }
