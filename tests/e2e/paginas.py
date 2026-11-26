@@ -11,6 +11,7 @@ Esperas: explícitas (WebDriverWait), nunca time.sleep. O teste espera
 exatamente a condição de que precisa, nem mais nem menos tempo.
 """
 
+from selenium.common.exceptions import WebDriverException
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as condicao
 from selenium.webdriver.support.ui import Select, WebDriverWait
@@ -20,6 +21,20 @@ TEMPO_MAXIMO = 10  # segundos
 
 def _testid(nome):
     return (By.CSS_SELECTOR, f'[data-testid="{nome}"]')
+
+
+def esperar_troca_de_pagina(navegador, elemento_antigo, tempo=TEMPO_MAXIMO, intervalo=0.5):
+    """Espera o elemento da página antiga deixar de existir (página trocada).
+
+    No meio da troca, o Chrome às vezes responde com um erro genérico ("Node with
+    given id does not belong to the document") em vez de dizer que o elemento
+    sumiu. Esse erro é tratado como "ainda trocando": a espera pergunta de novo.
+    Se a página nunca trocar, o tempo esgota e o teste falha (TimeoutException),
+    então um defeito real não fica escondido.
+    """
+    espera = WebDriverWait(navegador, tempo, poll_frequency=intervalo,
+                           ignored_exceptions=(WebDriverException,))
+    return espera.until(condicao.staleness_of(elemento_antigo))
 
 
 class PaginaNoticias:
@@ -51,7 +66,7 @@ class PaginaNoticias:
         """
         pagina_antiga = self.navegador.find_element(By.TAG_NAME, "html")
         self.navegador.find_element(*localizador).click()
-        self.espera.until(condicao.staleness_of(pagina_antiga))
+        esperar_troca_de_pagina(self.navegador, pagina_antiga)
         self.espera.until(condicao.visibility_of_element_located(self.FORMULARIO))
 
     def url(self):

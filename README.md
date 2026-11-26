@@ -197,7 +197,7 @@ isso falharam, com print e HTML salvos.
 
 ## Testes
 
-**299 testes rápidos** e **17 testes E2E** (34 execuções: Chrome e Firefox),
+**302 testes rápidos** e **17 testes E2E** (34 execuções: Chrome e Firefox),
 com pytest. **Nenhum acessa a internet**:
 
 - Os feeds e as respostas da API são **fixtures fictícias** escritas à mão.
