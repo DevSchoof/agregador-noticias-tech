@@ -54,7 +54,7 @@ def _coletar_todas(configs, temas, fabrica, pausa):
             noticias = filtrar_por_tema(noticias, temas)
         logger.info("Fonte %r: %d coletadas, %d aproveitadas%s.", nome,
                     total_da_fonte, len(noticias),
-                    "" if cfg["filtrar"] else " (fonte sem filtro)")
+                    "" if cfg["filtrar"] else " (sem filtro de temas)")
         aproveitadas.extend(noticias)
     return coletadas, aproveitadas, falhas
 
